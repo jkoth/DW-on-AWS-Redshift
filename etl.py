@@ -20,3 +20,21 @@ def load_staging_tables(cur, conn):
         cur.execute(query)
         conn.commit()
 
+"""
+Purpose:
+    Loops through insert_table_queries list and runs insert queries
+    insert_table_queries are defined in sql_queries file
+Arg:
+    cur - Redshift connection cursor [Required]
+    conn - Redshift connection [Required]
+"""
+def insert_tables(cur, conn):
+    num_queries = len(insert_table_queries)
+    query_count = 0
+    for query in insert_table_queries:
+        query_count += 1
+        print("Running ", query_count, "/", num_queries, " INSERT table queries")
+        cur.execute(query)
+        conn.commit()
+
+
