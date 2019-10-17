@@ -38,3 +38,73 @@ def create_tables(cur, conn):
         cur.execute(query)
         conn.commit()
 
+"""
+Purpose:
+    Reads Redshift Cluster connection info stored in dwh.cfg config file
+    Connects to cluster using config details and retrieves Connection and Cursor handle
+    Upon connecting successfully, calls drop_tables() and create_table() functions
+"""
+def main():
+    config = configparser.ConfigParser()
+    # Open and Read config file to retrieve Cluster and DWH details required to connect
+    print("Reading 'dwh.cfg' Config file...")
+    try:
+        config.read('dwh.cfg')
+        print("Complete reading 'dwh.cfg' Config file")
+    except Exception as e:
+        print("Error reading Config file: ", e)
+        sys.exit()
+
+    # Creating a connection using Cluster and DWH details stored in config file
+    print("Connecting to Data Warehouse...")
+    try:
+        conn = psycopg2.connect("host={} dbname={} user={} password={} port={}".format(*config['CLUSTER'].values()))
+        print("Connected to Data Warehouse")
+    except Exception as e:
+        print("Error connecting Data Warehouse: ", e)
+        sys.exit()
+
+    # Getting conection cursor
+    print("Getting Cursor")
+    try:
+        cur = conn.cursor()
+        print("Connection cursor retrieved")
+    except Exception as e:
+        print("Error getting connection cursor: ", e)
+        print("Closing connection to data warehouse...")
+        conn.close()
+        sys.exit()
+
+    # Running Drop Table queries
+    print("Running Drop Table queries...")
+    try:
+        drop_tables(cur, conn)
+        print("Drop table queries complete")
+    except Exception as e:
+        print("Error dropping tables: ", e)
+        print("Closing connection to data warehouse...")
+        conn.close()
+        sys.exit()
+
+    # Running Create Table queries
+    print("Running Create Table queries...")
+    try:
+        create_tables(cur, conn)
+        print("Create table queries complete")
+    except Exception as e:
+        print("Error creating tables: ", e)
+        print("Closing connection to data warehouse...")
+        conn.close()
+        sys.exit()
+
+    # Closing connection
+    print("Closing connection to data warehouse...")
+    conn.close()
+
+
+"""
+    Run above code if the file is labled __main__
+      Python internally labels files at runtime to differentiate between imported files and main file
+"""
+if __name__ == "__main__":
+    main()
